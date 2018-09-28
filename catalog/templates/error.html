@@ -1,0 +1,18 @@
+{% extends "main.html" %} {% block content %} {% include "header.html" %}
+
+<div class="error">
+	<h2 style="text-align:center;margin:0px;">
+		<a style="text-decoration:none;" href="{{url_for('showCategories')}}">
+			<span class="glyphicon glyphicon-home" aria-hidden="true" style="font-size:20px"></span>
+			<span style="font-size:24px;">Back To Home!</span>
+		</a>
+	</h2>
+	<a href="{{url_for('showCategories')}}">
+		<img src="/static/error.png" alt="Error" style="max-width:300px;max-height:300px;width:50%">
+	</a>
+</div>
+<div>
+	<h2 style="margin-top:-5px;text-align:center">{{errormsg}}</h2>
+</div>
+
+{% endblock %}

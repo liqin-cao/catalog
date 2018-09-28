@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Roboto:400,300,700">
+	<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
+	<script src="https://apis.google.com/js/platform.js?onload=start"> </script>
+	<script>
+		gapi.load('auth2', function () {
+			auth2 = gapi.auth2.init({
+				client_id: '797078761192-jjv3gff8s5fkedtehen27bjns0aj5uqk.apps.googleusercontent.com',
+				// Scopes to request in addition to 'profile' and 'email'
+				//scope: 'additional_scope'
+			});
+		});
+	</script>
+</head>
+
+<body>
+	<div class="container">
+		{% block content %} {% endblock %}
+	</div>
+</body>
+
+</html>
