@@ -34,7 +34,7 @@ Take a baseline installation of a AWS Lightsail Linux server and prepare it to h
     $ sudo apt-get upgrade
 
 #### Step 4 Change the SSH port from 22 to 2200
-* Change SSH Port from 22 to 2200 in */etc/ssh/sshd_config* file:
+* Change SSH Port from 22 to 2200 in `/etc/ssh/sshd_config` file:
       
       $ sudo vi /etc/ssh/sshd_config
       
@@ -72,9 +72,45 @@ Take a baseline installation of a AWS Lightsail Linux server and prepare it to h
 
 ### Give grader Access
 #### Step 6 Create a new user account named grader
+    
+    $ sudo adduser grader
 
-#### Step 7 Give grader the permission to sudo
+#### Step 7 Give grader the permission to sudo command
+* Create a sudo access file `/etc/sudoers.d/grader` for **grader**:
+
+      $ sudo vi /etc/sudoers.d/grader
+   
+      # User rules for grader
+      grader ALL=(ALL) NOPASSWD:ALL
+
 #### Step 8 Create an SSH key pair for grader using the ssh-keygen tool
+* From local machine, generate a SSH key pair for **grader**.  when prompted for file to save the key, enter `grader`.  This command generates two files: `grader` and `grader.pub`. Rename `grader` file to `grader.pem`.
+ 
+      $ ssh-keygen
+      $ mv grader grader.pem
+ 
+* Back on Ubuntu Linux server, switch the user to **grader**:
+
+      $ sudo su - grader
+      
+* Create a `.ssh` folder in `/home/grader` directory, set the folder owner to **grader** and grant read/write/execute privilege only to the owner:
+
+      $ cd /home/grader
+      $ mkdir .ssh
+      $ chown grader:grader /home/grader/.ssh
+      $ chmod 700 /home/grader/.ssh
+      
+* Create a `/home/grader/.ssh/authorized_keys` file, copy the content of `grader.pub` (generated public key) and grant read/write privilege only to the owner:
+
+      $ vi /home/grader/.ssh/authorized_keys
+      $ chmod 600 /home/grader/.ssh/authorized_keys
+
+* Log into the server using [MobaXterm](https://mobaxterm.mobatek.net/) SSH session with user **grader** and `grader.pem` (generated private key).
+
+To disable password login and remote login of the `root` user, follow the instructions from [How To Disable Remote Logon For Root On Ubuntu 16.04 LTS Servers](https://websiteforstudents.com/how-to-disable-remote-logon-for-root-on-ubuntu-16-04-lts-servers/):
+* `sudo vi /etc/ssh/sshd_config` and set `PasswordAuthentication no`
+* `sudo vi /etc/ssh/sshd_config` and change `PermitRootLogin prohibit-password` to `PermitRootLogin no`
+* `sudo service ssh restart`
 
 ### Prepare To Deploy The Project
 #### Step 9 Configure the local timezone to UTC
@@ -106,3 +142,4 @@ This project is licensed under the LC License.
 
 * Udacity Full Stack Web Developer Nanodegree
 * [MobaXterm](https://mobaxterm.mobatek.net/) for connecting to the Linux server
+* [How To Disable Remote Logon For Root On Ubuntu 16.04 LTS Servers](https://websiteforstudents.com/how-to-disable-remote-logon-for-root-on-ubuntu-16-04-lts-servers/)
