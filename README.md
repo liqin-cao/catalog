@@ -11,6 +11,10 @@ Take a baseline installation of a AWS Lightsail Linux server and prepare it to h
 * Web Application URL: http://34.205.85.252.xip.io/
 
 ## Software Summary
+* apache2
+* libapache2-mod-wsgi
+* postgresql
+* postgresql-contrib
 
 ## Configuration Summary
 
@@ -116,8 +120,76 @@ Follow the instructions from [How To Disable Remote Logon For Root On Ubuntu 16.
 
 ### Prepare To Deploy The Project
 #### Step 9 Configure the local timezone to UTC
+* Log into the Ubuntu Linux server using [MobaXterm](https://mobaxterm.mobatek.net/) SSH session as **grader**.
+* Check local timezone is set to UTC:
+
+      $ sudo dpkg-reconfigure tzdata
+      Current default time zone: 'Etc/UTC'
+      Local time is now:      Mon Sep 24 16:58:05 UTC 2018.
+      Universal Time is now:  Mon Sep 24 16:58:05 UTC 2018.
+
 #### Step 10 Install and configure Apache to serve a Python mod_wsgi application
+* Install **apache2** Apache HTTP Server:
+
+      $ sudo apt-get install apache2
+      
+* Install **libapache2-mod-wsgi** to provide a WSGI compliant interface for hosting Python based web applications under Apache:
+      
+      $ sudo apt-get install libapache2-mod-wsgi
+
 #### Step 11 Install and configure PostgreSQL
+Follow the instructions from [How To Secure PostgreSQL on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps) to install and secure PostgreSQL.
+
+* Install PostgreSQL:
+
+      $ sudo apt-get install postgresql postgresql-contrib
+      
+      Setting up postgresql-9.5 (9.5.14-0ubuntu0.16.04) ...
+      Creating new cluster 9.5/main ...
+            config /etc/postgresql/9.5/main
+            data   /var/lib/postgresql/9.5/main
+            locale en_US.UTF-8
+            socket /var/run/postgresql
+            port   5432
+
+* Verify that no remote connections are allowed by looking in the host based authentication file:
+      
+      $ sudo vi /etc/postgresql/9.5/main/pg_hba.conf
+
+      local   all             postgres                                peer
+      local   all             all                                     peer
+      host    all             all             127.0.0.1/32            md5
+      host    all             all             ::1/128                 md5
+
+* Create a new database user named `catalog` that has limited permissions to the `catalog` application database: 
+
+      $ sudo su postgres
+      $ createuser catalog 
+      $ createdb catalog
+      $ psql
+      postgres=# alter user catalog with encrypted password 'catalog';
+      postgres=# grant all privileges on database catalog to catalog;
+
+* Verify `catalog` database user is successfully created:
+
+      postgres=# \du
+      
+  | Role name |                         Attributes                         | Member of
+  | ----------|------------------------------------------------------------| -----------
+  | catalog   |                                                            | {}
+  | postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+
+* Verify `catalog` database is successfully created:
+
+      postgres=# \l
+  |     Name   |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges    |
+  | -----------|----------|----------|-------------|-------------|----------------------- |
+  | catalog    | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =Tc/postgres         + |
+  |            |          |          |             |             | postgres=CTc/postgres+ |
+  |            |          |          |             |             | catalog=CTc/postgres   |
+  | postgres   | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |                        |
+
+    
 #### Step 12 Install git
 
 ### Deploy The Item Catalog Project
@@ -145,3 +217,4 @@ This project is licensed under the LC License.
 * Udacity Full Stack Web Developer Nanodegree
 * [MobaXterm](https://mobaxterm.mobatek.net/) for connecting to the Linux server
 * [How To Disable Remote Logon For Root On Ubuntu 16.04 LTS Servers](https://websiteforstudents.com/how-to-disable-remote-logon-for-root-on-ubuntu-16-04-lts-servers/)
+* [How To Secure PostgreSQL on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps)
