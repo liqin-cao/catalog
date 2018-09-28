@@ -1,6 +1,6 @@
 # Amazon Lightsail Configuration For Hosting Catalog Flask Application With PostgreSQL Database
 
-Take a baseline installation of a AWS Lightsail Linux server and prepare it to host an existing web application by
+Take a baseline installation of a AWS Lightsail Linux server and prepare it to host an existing web application via:
 * securing the server from a number of attack vectors,
 * installing and configuring a PostgreSQL database server, and 
 * deploying the existing Catalog Flask applications onto it.
@@ -24,17 +24,18 @@ Take a baseline installation of a AWS Lightsail Linux server and prepare it to h
 
 #### Step 2 SSH into the Ubuntu Linux server
 * On the Lightsail **Connect** tab, verify SSH connection to the server via the **Connect using SSH** button.
-* On the Lightsail **Connect** tab, follow the instructions to log into the server using my own SSH client [MobaXterm](https://mobaxterm.mobatek.net/) with user **ubuntu** and the default account private key.
+* On the Lightsail **Connect** tab, follow the instructions to log into the server using SSH client [MobaXterm](https://mobaxterm.mobatek.net/) with user `ubuntu` and the default account private key.
 
 
 ### Secure The Server
 #### Step 3 Update all currently installed packages
-  
-    $ sudo apt-get update
-    $ sudo apt-get upgrade
+* From Ubuntu Linux server command prompt, run the following `apt-get` commands:
+
+      $ sudo apt-get update
+      $ sudo apt-get upgrade
 
 #### Step 4 Change the SSH port from 22 to 2200
-* Change SSH Port from 22 to 2200 in `/etc/ssh/sshd_config` file:
+* Change SSH Port from **22** to **2200** in `/etc/ssh/sshd_config` file:
       
       $ sudo vi /etc/ssh/sshd_config
       
@@ -42,10 +43,10 @@ Take a baseline installation of a AWS Lightsail Linux server and prepare it to h
 
       $ sudo service ssh restart 
       
-* Finally, on the Lightsail **Networking** tab, add Custom/TCP/2200 to the **Firewall** section.
+* Finally, back on the Amazon Lightsail **Networking** tab, add **Custom|TCP|2200** to the **Firewall** section.
 
 #### Step 5  Configure the Uncomplicated Firewall (UFW) to only allow incoming connections for SSH (port 2200), HTTP (port 80), and NTP (port 123)
-* Check UFW status is inactive
+* Check UFW status is inactive:
       
       $ sudo ufw status
       
@@ -72,8 +73,9 @@ Take a baseline installation of a AWS Lightsail Linux server and prepare it to h
 
 ### Give grader Access
 #### Step 6 Create a new user account named grader
-    
-    $ sudo adduser grader
+* Create a **grader** user with any password (this feature will be replaced with key-based SSH authentication):
+
+      $ sudo adduser grader
 
 #### Step 7 Give grader the permission to sudo command
 * Create a sudo access file `/etc/sudoers.d/grader` for **grader**:
@@ -84,12 +86,12 @@ Take a baseline installation of a AWS Lightsail Linux server and prepare it to h
       grader ALL=(ALL) NOPASSWD:ALL
 
 #### Step 8 Create an SSH key pair for grader using the ssh-keygen tool
-* From local machine, generate a SSH key pair for **grader**.  when prompted for file to save the key, enter `grader`.  This command generates two files: `grader` and `grader.pub`. Rename `grader` file to `grader.pem`.
+* From local machine, generate a SSH key pair for **grader**.  When prompted for file to save the key pair, enter `grader`.  This command generates two files: `grader` and `grader.pub`. Rename `grader` file to `grader.pem`.
  
       $ ssh-keygen
       $ mv grader grader.pem
  
-* Back on Ubuntu Linux server, switch the user to **grader**:
+* Back on the Ubuntu Linux server, switch the user to **grader**:
 
       $ sudo su - grader
       
@@ -105,12 +107,12 @@ Take a baseline installation of a AWS Lightsail Linux server and prepare it to h
       $ vi /home/grader/.ssh/authorized_keys
       $ chmod 600 /home/grader/.ssh/authorized_keys
 
-* Log into the server using [MobaXterm](https://mobaxterm.mobatek.net/) SSH session with user **grader** and `grader.pem` (generated private key).
+* Log into the Ubuntu Linux server using [MobaXterm](https://mobaxterm.mobatek.net/) SSH session with user **grader** and `grader.pem` (generated private key).
 
-To disable password login and remote login of the `root` user, follow the instructions from [How To Disable Remote Logon For Root On Ubuntu 16.04 LTS Servers](https://websiteforstudents.com/how-to-disable-remote-logon-for-root-on-ubuntu-16-04-lts-servers/):
+Follow the instructions from [How To Disable Remote Logon For Root On Ubuntu 16.04 LTS Servers](https://websiteforstudents.com/how-to-disable-remote-logon-for-root-on-ubuntu-16-04-lts-servers/) to disable password login and remote login of the `root` user, :
 * `sudo vi /etc/ssh/sshd_config` and set `PasswordAuthentication no`
 * `sudo vi /etc/ssh/sshd_config` and change `PermitRootLogin prohibit-password` to `PermitRootLogin no`
-* `sudo service ssh restart`
+* Restart SSH service with `sudo service ssh restart`
 
 ### Prepare To Deploy The Project
 #### Step 9 Configure the local timezone to UTC
