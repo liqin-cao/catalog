@@ -20,6 +20,13 @@ Take a baseline installation of a AWS Lightsail Linux server and prepare it to h
 * pip
 * virtualenv
 * Flask
+* python-sqlalchemy
+* python-psycopg2
+* sqlalchemy
+* oauth2client
+* requests
+* httplib2
+* bleach
 
 ## Configuration Summary
 
@@ -123,6 +130,7 @@ Follow the instructions from [How To Disable Remote Logon For Root On Ubuntu 16.
 * `sudo vi /etc/ssh/sshd_config` and change `PermitRootLogin prohibit-password` to `PermitRootLogin no`
 * Restart SSH service with `sudo service ssh restart`
 
+
 ### Prepare To Deploy The Project
 #### Step 9 - Configure the local timezone to UTC
 * Log into the Ubuntu Linux server using [MobaXterm](https://mobaxterm.mobatek.net/) SSH session as **grader**.
@@ -167,16 +175,16 @@ Follow the instructions from [How To Secure PostgreSQL on an Ubuntu VPS](https:/
       host    all             all             127.0.0.1/32            md5
       host    all             all             ::1/128                 md5
 
-Follow the instructions from [Creating user, database and adding access on PostgreSQL](https://medium.com/coding-blocks/creating-user-database-and-adding-access-on-postgresql-8bfcd2f4a91e) to configure user and database:
-
 * Create a new database user named `catalog` that has limited permissions to the `catalog` application database: 
 
-      $ sudo su postgres
-      $ createuser catalog 
-      $ createdb catalog
+      $ sudo su - postgres
       $ psql
-      postgres=# alter user catalog with encrypted password 'catalog';
-      postgres=# grant all privileges on database catalog to catalog;
+      postgres=# create user catalog with password 'catalog';
+      postgres=# create database catalog with owner catalog;
+      postgres=# \c catalog
+      catalog=# revoke all on schema public from public;
+      catalog=# grant all on schema public to catalog;
+
 
 * Verify `catalog` database user is successfully created:
 
@@ -192,9 +200,7 @@ Follow the instructions from [Creating user, database and adding access on Postg
       postgres=# \l
   |     Name   |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges    |
   | -----------|----------|----------|-------------|-------------|----------------------- |
-  | catalog    | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =Tc/postgres         + |
-  |            |          |          |             |             | postgres=CTc/postgres+ |
-  |            |          |          |             |             | catalog=CTc/postgres   |
+  | catalog    | catalog  | UTF8     | en_US.UTF-8 | en_US.UTF-8 |                        |
   | postgres   | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |                        |
 
     
@@ -202,6 +208,7 @@ Follow the instructions from [Creating user, database and adding access on Postg
 * Install `git` to clone the Item Catalog application from Github repository:
 
       $ sudo apt-get install git
+
 
 ### Deploy The Item Catalog Project
 #### Step 13 - Clone and setup the Item Catalog application from the Github repository
@@ -217,7 +224,7 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
       $ sudo apt-get install libapache2-mod-wsgi python-dev
       $ sudo a2enmod wsgi
 
-* Create a simple Flask application in `/var/www/catalog/catalog/__init__.py`:
+* Create a simple test Flask application in `/var/www/catalog/catalog/__init__.py`:
 
       $ cd /var/www/catalog/catalog
       $ sudo vi __init__.py
@@ -246,7 +253,7 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
       
       $ source /var/www/catalog/catalog/venv/bin/activate
 
-* Install `Flask` and test the installation by running the simple Flask application:
+* Install `Flask` and test the installation by running the simple test Flask application:
 
       $ sudo pip install Flask
       
@@ -296,9 +303,34 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
 
       $ sudo service apache2 restart
 
-* Verify that the simple Flask application is accessible from the browser URL `http://34.205.85.252.xip.io/`.
+* Verify that the simple test Flask application is accessible from the browser URL `http://34.205.85.252.xip.io/`.
 
-#### Step 14 - Make Item Catalog application accessible from a browser 
+#### Step 14 - Make Item Catalog application accessible from a browser
+* Install modules needed by the Item Catalog application:
+
+      $ source /var/www/catalog/catalog/venv/bin/activate
+      $ sudo apt-get -qqy install python-sqlalchemy
+      $ sudo apt-get -qqy install python-psycopg2
+      $ sudo pip install sqlalchemy
+      $ sudo pip install oauth2client
+      $ sudo pip install requests
+      $ sudo pip install httplib2
+      $ sudo pip install bleach
+      
+* Update sqlalchemy to connect to PostgreSQL database in `db_models.py`, `db_initdata.py` and `application.py`:
+
+      engine = create_engine('postgresql://catalog:catalog@localhost/catalog')
+
+* Create database tables and populate the tables with initial data:
+
+      $ sudo python db_models.py
+      $ sudo python db_initdata.py
+      
+* Rename `application.py` to `__init__.py` and restart Apache service `sudo service apache2 restart`.
+
+* QQQ Set up OAuth with DNS name provided by [xip.io](http://xip.io/) service: `http://34.205.85.252.xip.io/`.
+* Verify that the Item Catalog application is accessible from the browser URL `http://34.205.85.252.xip.io/`.
+* QQQ [Hide Git Repos on Public Sites](https://davidegan.me/hide-git-repos-on-public-sites/) so that the Item Catalog `.git` directory is not publicly accessible via a browser!
 
 ## Contributing
 
@@ -322,5 +354,6 @@ This project is licensed under the LC License.
 * [MobaXterm](https://mobaxterm.mobatek.net/) for connecting to the Linux server
 * [How To Disable Remote Logon For Root On Ubuntu 16.04 LTS Servers](https://websiteforstudents.com/how-to-disable-remote-logon-for-root-on-ubuntu-16-04-lts-servers/)
 * [How To Secure PostgreSQL on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps)
-* [Creating user, database and adding access on PostgreSQL](https://medium.com/coding-blocks/creating-user-database-and-adding-access-on-postgresql-8bfcd2f4a91e)
 * [How To Deploy a Flask Application on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
+* [xip.io](http://xip.io/) for providing a DNS name that refers to the Ubuntu Linux server IP address
+* [Hide Git Repos on Public Sites](https://davidegan.me/hide-git-repos-on-public-sites/)
