@@ -90,6 +90,7 @@ Take a baseline installation of a AWS Lightsail Linux server and prepare it to h
 * Create a sudo access file `/etc/sudoers.d/grader` for **grader**:
 
       $ sudo vi /etc/sudoers.d/grader
+      
       # User rules for grader
       grader ALL=(ALL) NOPASSWD:ALL
 
@@ -128,6 +129,7 @@ Follow the instructions from [How To Disable Remote Logon For Root On Ubuntu 16.
 * Check local timezone is set to UTC:
 
       $ sudo dpkg-reconfigure tzdata
+      
       Current default time zone: 'Etc/UTC'
       Local time is now:      Mon Sep 24 16:58:05 UTC 2018.
       Universal Time is now:  Mon Sep 24 16:58:05 UTC 2018.
@@ -220,13 +222,13 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
       $ cd /var/www/catalog/catalog
       $ sudo vi __init__.py
       
-      from flask import Flask
-      app = Flask(__name__)
-      @app.route("/")
-      def hello():
-          return "Hello Udacity!"
-      if __name__ == "__main__":
-          app.run()
+            from flask import Flask
+            app = Flask(__name__)
+            @app.route("/")
+            def hello():
+                return "Hello Udacity!"
+            if __name__ == "__main__":
+                app.run()
 
 * Install `pip` and `virtualenv`:
 
@@ -238,6 +240,7 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
 
       $ cd /var/www/catalog/catalog
       $ sudo virtualenv venv
+      
       New python executable in /var/www/catalog/catalog/venv/bin/python
       Installing setuptools, pip, wheel...done.
       
@@ -246,6 +249,7 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
 * Install `Flask` and test the installation by running the simple Flask application:
 
       $ sudo pip install Flask
+      
       Successfully installed Flask-1.0.2 Jinja2-2.10 MarkupSafe-1.0 Werkzeug-0.14.1 click-7.0 itsdangerous-0.24
       
       $ sudo python __init__.py
@@ -253,39 +257,40 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
 * Configure and enable a new virtual host on the Ubuntu Linux server:
 
       $ sudo vi /etc/apache2/sites-available/catalog.conf
-      <VirtualHost *:80>
-        ServerName 34.205.85.252
-        ServerAdmin liqincao@gmail.com
-        WSGIScriptAlias / /var/www/catalog/catalog.wsgi
-        <Directory /var/www/catalog/catalog/>
-                Order allow,deny
-                Allow from all
-        </Directory>
-        Alias /static /var/www/catalog/catalog/static
-        <Directory /var/www/catalog/catalog/static/>
-                Order allow,deny
-                Allow from all
-        </Directory>
-        ErrorLog ${APACHE_LOG_DIR}/error.log
-        LogLevel warn
-        CustomLog ${APACHE_LOG_DIR}/access.log combined
-      </VirtualHost>
+      
+            <VirtualHost *:80>
+                  ServerName 34.205.85.252
+                  ServerAdmin liqincao@gmail.com
+                  WSGIScriptAlias / /var/www/catalog/catalog.wsgi
+                  <Directory /var/www/catalog/catalog/>
+                        Order allow,deny
+                        Allow from all
+                  </Directory>
+                  Alias /static /var/www/catalog/catalog/static
+                  <Directory /var/www/catalog/catalog/static/>
+                        Order allow,deny
+                        Allow from all
+                  </Directory>
+                  ErrorLog ${APACHE_LOG_DIR}/error.log
+                  LogLevel warn
+                  CustomLog ${APACHE_LOG_DIR}/access.log combined
+            </VirtualHost>
 
       $ sudo a2ensite catalog
       
 * Create the `catalog.wsgi` file to server the Flask application:
 
       $ sudo vi /var/www/catalog/catalog.wsgi
-      #!/usr/bin/python
+            #!/usr/bin/python
 
-      import sys
-      import logging
+            import sys
+            import logging
 
-      logging.basicConfig(stream=sys.stderr)
-      sys.path.insert(0,"/var/www/catalog/")
+            logging.basicConfig(stream=sys.stderr)
+            sys.path.insert(0,"/var/www/catalog/")
 
-      from catalog import app as application
-      application.secret_key = 'In My Secret Life'
+            from catalog import app as application
+            application.secret_key = 'In My Secret Life'
 
 * Restart Apache service:
 
