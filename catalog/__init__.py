@@ -27,7 +27,7 @@ from oauth_utils import google_connect, facebook_connect, disconnect
 app = Flask(__name__)
 
 # Connect to Database and create database session
-engine = create_engine('sqlite:///catalogWithOAuth.db')
+engine = create_engine('postgresql://catalog:catalog@localhost/catalog')
 Base.metadata.bind = engine
 DB_session = scoped_session(sessionmaker(bind=engine))
 
@@ -471,10 +471,11 @@ def deleteCategoryItem(item_title):
 
 
 if __name__ == '__main__':
-    app.secret_key = 'super_secret_key'
+    #app.secret_key = 'super_secret_key'
     app.debug = True
 
     # Set threaded to True to serve multiple clients concurrently
     # https://stackoverflow.com/questions/14814201/can-i-serve-multiple-clients-using-just-flask-app-run-as-standalone/14823968#14823968
     # app.run(host='0.0.0.0', port=8000, threaded=True)
-    app.run(host='0.0.0.0', port=8000)
+    # app.run(host='0.0.0.0', port=8000)
+    app.run()

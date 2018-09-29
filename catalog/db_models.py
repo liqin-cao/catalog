@@ -85,6 +85,6 @@ class Item(Base):
         return pattern.sub('', self.title)
 
 
-engine = create_engine('sqlite:///catalogWithOAuth.db')
+engine = create_engine('postgresql://catalog:catalog@localhost/catalog')
 
 Base.metadata.create_all(engine)

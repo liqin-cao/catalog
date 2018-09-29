@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from db_models import Category, Base, Item, User
 
-engine = create_engine('sqlite:///catalogWithOAuth.db')
+engine = create_engine('postgresql://catalog:catalog@localhost/catalog')
 # Bind the engine to the metadata of the Base class so that the
 # declaratives can be accessed through a DBSession instance
 Base.metadata.bind = engine
@@ -189,7 +189,7 @@ item6 = Item(user_id=1, title="Tofurky Italian Sausage", description="A Tofurky 
 session.add(item6)
 session.commit()
 
-item7 = Item(user_id=1, title="Tofurky Feast", description="Tailgate partiers, trick-or-treaters and the Tooth Fairy are all in agreement: if you do something twice in a row, it's officially a tradition. We've been serving up Tofurky Roasts since 1995, so we're well-versed in the fine art of the meat-free main dish. If this is your first Tofurky Roast dinner, congratulations - you're halfway to a brand new tradition.",
+item7 = Item(user_id=1, title="Tofurky Feast", description="Tailgate partiers, trick-or-treaters and the Tooth Fairy are all in agreement: if you do something twice in a row, it's officially a tradition.",
                      category=category5)
 
 session.add(item7)
@@ -225,13 +225,13 @@ item2 = Item(user_id=1, title="Haagen-Dazs Chocolate Salted Fudge Truffle", desc
 session.add(item2)
 session.commit()
 
-item3 = Item(user_id=1, title="Trader Joe's Organic Soy Creamy", description="Trader Joe's lineup of vanilla frozen treat options is this flavor that's great for vegans and those with dairy sensitivities. The 'creamy' in the name is no misnomer. Despite the lack of dairy, this flavor will blow you away in the texture department.",
+item3 = Item(user_id=1, title="Trader Joe's Organic Soy Creamy", description="Trader Joe's lineup of vanilla frozen treat options is this flavor that's great for vegans and those with dairy sensitivities.",
                      category=category6)
 
 session.add(item3)
 session.commit()
 
-item4 = Item(user_id=1, title="So Delicious Chocolate Drizzled Bananas Foster", description="Inspired by the classic, enjoy this banana-vanilla-chocolate chip sensation that's making a comeback. Or did it ever go away? Perfectly paired with our cashewmilk frozen dessert.",
+item4 = Item(user_id=1, title="So Delicious Chocolate Drizzled Bananas Foster", description="Inspired by the classic, enjoy this banana-vanilla-chocolate chip sensation that's making a comeback. Or did it ever go away?",
                      category=category6)
 
 session.add(item4)
@@ -297,7 +297,7 @@ item1 = Item(user_id=1, title="Vegenaise", description="Made with non-GMO, expel
 session.add(item1)
 session.commit()
 
-item2 = Item(user_id=1, title="Hellmann's Vegan Dressing", description="Hellmann's Vegan Dressing and Sandwich Spread is an excellent source of good fats, like Omega 3-ALA (contains 771mg of Omega-3 per serving, which is 44% of the 1.6g Daily Value for ALA), and is also gluten-free and certified kosher. It's the ideal condiment for spreading on sandwiches and wraps, grilling juicy burgers, baking flavorful fish, mixing creamy dips, and preparing fresh salads.",
+item2 = Item(user_id=1, title="Hellmann's Vegan Dressing", description="Hellmann's Vegan Dressing and Sandwich Spread is an excellent source of good fats, like Omega 3-ALA, and is also gluten-free and certified kosher.",
                      category=category7)
 
 session.add(item2)
