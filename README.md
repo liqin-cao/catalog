@@ -1,141 +1,336 @@
-# Vegan Shopping List
+# Amazon Lightsail Configuration For Hosting Catalog Flask Application With PostgreSQL Database
 
-This application allows registered users to add, edit and delete vegan items within a variety of vegan alternative categories.
+Take a baseline installation of a AWS Lightsail Linux server and prepare it to host an existing web application via:
+* securing the server from a number of attack vectors,
+* installing and configuring a PostgreSQL database server, and 
+* deploying the existing Catalog Flask applications onto it.
 
-The application can be access via http://localhost:8000 with the following pages:
-* Home Page: /
-    * Displays all current vegan alternative categories
-    * Displays the latest added vegan items
-    * Logged in users can add a new vegan item from this page
-* Category Page: /catalog/<category_name>/items
-    * Displays all the vegan items available for the selected category
-    * Logged in users can add a new vegan item to the category from this page
-* Category Item Page: /catalog/<category_name>/<item_title>
-    * Dsiplays specific information of the selected vegan item
-    * Logged in users can edit/delete the vegan items that they've added
-* Edit Category Item Page: /catalog/<item_title>/edit
-    * Logged in users can edit their own vegan items
-* Delete Category Item page: /catalog/<item>/delete
-    * Logged in users can delete their own vegan items
-* JSON endpoint: /catalog.json
-    * Retrieves all the vegan items grouped by category
+## Amazon Lightsail Server Info
+* Public IP Address: 34.205.85.252
+* SSH Port: 2200
+* Web Application URL: http://34.205.85.252.xip.io/
 
-This application is written in [Python](https://www.python.org/) using [Flask](http://flask.pocoo.org/) web framework, a third-party [OAuth 2.0](https://oauth.net/2/) authentication & authorization service (like Google Accounts and Facebook Accounts), and [SQLAlchemy](http://www.sqlalchemy.org/) SQL toolkit to manage the following database tables:
+## Software Summary
+* apache2
+* libapache2-mod-wsgi
+* postgresql
+* postgresql-contrib
+* git
+* python-dev
+* pip
+* virtualenv
+* Flask
+* python-sqlalchemy
+* python-psycopg2
+* sqlalchemy
+* oauth2client
+* requests
+* httplib2
+* bleach
 
-Table **user**
+## Configuration Summary
 
-Column    | Type         | Modifiers                      
---------- |------------- |----------------------------
-id        | Integer      | primary_key=True
-name      | Sring(32)    | nullable=False, index=True
-email     | Sring(250)   | nullable=False
-picture   | Sring(250)   |
+### Getting Started With Amazon Lightsail
+#### Step 1 - Start a new Ubuntu Linux server instance on [Amazon Lightsail](https://lightsail.aws.amazon.com)
+* Create an AWS account with **12 Months of Free Tier Access**.
+* Create an Amazon Lightsail instance using **OS Only** and **Ubuntu 16.04 LTS** instance image.
+* Choose the lowest instance plan which should be free for the first month.
+* Give the instance a hostname.
+* Once the instance is up and running, the public IP address of the instance is displayed along with its name.
 
-Table **category**
+#### Step 2. SSH into the Ubuntu Linux server
+* On the Lightsail **Connect** tab, verify SSH connection to the server via the **Connect using SSH** button.
+* On the Lightsail **Connect** tab, follow the instructions to log into the server using SSH client [MobaXterm](https://mobaxterm.mobatek.net/) with user `ubuntu` and the default account private key.
 
-Column | Type      | Modifiers
------- |---------- |------------------------
-id     | Integer   | primary_key=True
-name   | Sring(80) | nullable=False, index=True
 
-Table **item**
+### Secure The Server
+#### Step 3 - Update all currently installed packages
+* From Ubuntu Linux server command prompt, run the following `apt-get` commands:
 
-Column        |  Type       | Modifiers
-------------- |------------ |----------------------------------
-id            | Integer     | primary_key=True
-created_date  | DateTime    | default=datetime.datetime.utcnow
-title         | String(80)  | nullable=False
-description   | String(250) | nullable=False
-cat_id        | Integer     | ForeignKey('category.id')
-user_id       | Integer     | ForeignKey('user.id')
+      $ sudo apt-get update
+      $ sudo apt-get upgrade
 
-## Getting Started
+#### Step 4 - Change the SSH port from 22 to 2200
+* Change SSH Port from **22** to **2200** in `/etc/ssh/sshd_config` file:
+      
+      $ sudo vi /etc/ssh/sshd_config
+      
+* Restart the SSH service:
 
-These instructions will get you a copy of the application up and running.
+      $ sudo service ssh restart 
+      
+* Finally, back on the Amazon Lightsail **Networking** tab, add **Custom|TCP|2200** to the **Firewall** section.
 
-### Git
+#### Step 5 - Configure the Uncomplicated Firewall (UFW) to only allow incoming connections for SSH (port 2200), HTTP (port 80), and NTP (port 123)
+* Check UFW status is inactive:
+      
+      $ sudo ufw status
+      
+* Block all incoming and allow all outgoing connections:
 
-If you don't already have Git installed, [download Git from git-scm.com.](http://git-scm.com/downloads) Install the version for your operating system.
+      $ sudo ufw default deny incoming
+      $ sudo ufw default allow outgoing
+ 
+* Allow SSH port 2200, HTTP port 80 and NTP port 123:
 
-On Windows, Git will provide you with a Unix-style terminal and shell (Git Bash).  
-(On Mac or Linux systems you can use the regular terminal program.)
+      $ sudo ufw allow 2200/tcp
+      $ sudo ufw allow www
+      $ sudo ufw allow ntp
+      
+* Show ports added:
 
-### VirtualBox
+      $ sudo ufw show added
+      
+* Enable UFW and verify status is active:
 
-VirtualBox is the software that actually runs the VM. [You can download it from virtualbox.org, here.](https://www.virtualbox.org/wiki/Downloads)  Install the *platform package* for your operating system.  You do not need the extension pack or the SDK. You do not need to launch VirtualBox after installing it.
+      $ sudo ufw enable
+      $ sudo ufw status
 
-### Vagrant
 
-Vagrant is the software that configures the VM and lets you share files between your host computer and the VM's filesystem.  [You can download it from vagrantup.com.](https://www.vagrantup.com/downloads) Install the version for your operating system.
+### Give grader Access
+#### Step 6 - Create a new user account named grader
+* Create a **grader** user with any password (this feature will be replaced with key-based SSH authentication):
 
-### Prerequisites
+      $ sudo adduser grader
 
-* [Python 2.7.12](https://docs.python.org/2/) - the application programming language
-* [Werkzeug 0.8.3](http://werkzeug.pocoo.org/) - the Python WSGI utility library (pip install werkzeug==0.8.3)
-* [Flask 0.9](http://flask.pocoo.org/) - the microframework for Python based on Werkzeug, Jinja 2 (pip install flask==0.9)
-* [SQLAlchemy 1.2.11](http://www.sqlalchemy.org) - Python SQL toolkit and Object Relational Mapper
-* [oauth2client](https://github.com/google/oauth2client) - client library for accessing resources protected by OAuth 2.0
-* [vagrantfile...](https://github.com/liqin-cao/vegan_shopping_list/blob/master/vagrantfile) - VM configurations
+#### Step 7 - Give grader the permission to sudo command
+* Create a sudo access file `/etc/sudoers.d/grader` for **grader**:
 
-## Fetch the Source Code and VM Configuration
+      $ sudo vi /etc/sudoers.d/grader
+      
+      # User rules for grader
+      grader ALL=(ALL) NOPASSWD:ALL
 
-**Windows:** Use the Git Bash program (installed with Git) to get a Unix-style terminal.  
-**Other systems:** Use your favorite terminal program.
+#### Step 8 - Create an SSH key pair for grader using the ssh-keygen tool
+* From local machine, generate a SSH key pair for **grader**.  When prompted for file to save the key pair, enter `grader`.  This command generates two files: `grader` and `grader.pub`. Rename `grader` file to `grader.pem`.
+ 
+      $ ssh-keygen
+      $ mv grader grader.pem
+ 
+* Back on the Ubuntu Linux server, switch the user to **grader**:
 
-From the terminal, run:
+      $ sudo su - grader
+      
+* Create a `.ssh` folder in `/home/grader` directory, set the folder owner to **grader** and grant read/write/execute privilege only to the owner:
 
-    git clone https://github.com/liqinca0/vegan_shopping_list.git
+      $ cd /home/grader
+      $ mkdir .ssh
+      $ chown grader:grader /home/grader/.ssh
+      $ chmod 700 /home/grader/.ssh
+      
+* Create a `/home/grader/.ssh/authorized_keys` file, copy the content of `grader.pub` (generated public key) and grant read/write privilege only to the owner:
 
-This will give you a directory named **vegan_shopping_list** complete with the source code for the application and a **vagrantfile** for installing all of the necessary tools. 
+      $ vi /home/grader/.ssh/authorized_keys
+      $ chmod 600 /home/grader/.ssh/authorized_keys
 
-## Run the virtual machine!
+* Log into the Ubuntu Linux server using [MobaXterm](https://mobaxterm.mobatek.net/) SSH session with user **grader** and `grader.pem` (generated private key).
 
-Using the terminal, change directory to vegan_shopping_list (**cd /vegan_shopping_list**), then type **vagrant up** to launch your virtual machine:
+Follow the instructions from [How To Disable Remote Logon For Root On Ubuntu 16.04 LTS Servers](https://websiteforstudents.com/how-to-disable-remote-logon-for-root-on-ubuntu-16-04-lts-servers/) to disable password login and remote login of the `root` user, :
+* `sudo vi /etc/ssh/sshd_config` and set `PasswordAuthentication no`
+* `sudo vi /etc/ssh/sshd_config` and change `PermitRootLogin prohibit-password` to `PermitRootLogin no`
+* Restart SSH service with `sudo service ssh restart`
 
-    > cd /vegan_shopping_list
-    > vagrant up
 
-## Running the Vegan Shopping List App
-Once it is up and running, type **vagrant ssh**. This will log your terminal into the virtual machine, and you'll get a Linux shell prompt. When you want to log out, type **exit** at the shell prompt.  To turn the virtual machine off (without deleting anything), type **vagrant halt**. If you do this, you'll need to run **vagrant up** again before you can log into it.
+### Prepare To Deploy The Project
+#### Step 9 - Configure the local timezone to UTC
+* Log into the Ubuntu Linux server using [MobaXterm](https://mobaxterm.mobatek.net/) SSH session as **grader**.
+* Check local timezone is set to UTC:
 
-Now that you have Vagrant up and running type **vagrant ssh** to log into your VM.  Change to the /vegan_shopping_list directory by typing **cd /vegan_shopping_list**. This will take you to the shared folder between your virtual machine and host machine. Change to the /catalog directory by typing **cd /catalog**. This will take you to the application folder.
+      $ sudo dpkg-reconfigure tzdata
+      
+      Current default time zone: 'Etc/UTC'
+      Local time is now:      Mon Sep 24 16:58:05 UTC 2018.
+      Universal Time is now:  Mon Sep 24 16:58:05 UTC 2018.
 
-    > vagrant ssh
-    > cd /vegan_shopping_list
-    > cd /catalog
+#### Step 10 - Install and configure Apache to serve a Python mod_wsgi application
+* Install `apache2` Apache HTTP Server:
+
+      $ sudo apt-get install apache2
+      
+* Install `libapache2-mod-wsgi` to provide a WSGI compliant interface for hosting Python based web applications under Apache:
+      
+      $ sudo apt-get install libapache2-mod-wsgi
+
+#### Step 11 - Install and configure PostgreSQL
+Follow the instructions from [How To Secure PostgreSQL on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps) to install and secure PostgreSQL.
+
+* Install PostgreSQL:
+
+      $ sudo apt-get install postgresql postgresql-contrib
+      
+      Setting up postgresql-9.5 (9.5.14-0ubuntu0.16.04) ...
+      Creating new cluster 9.5/main ...
+            config /etc/postgresql/9.5/main
+            data   /var/lib/postgresql/9.5/main
+            locale en_US.UTF-8
+            socket /var/run/postgresql
+            port   5432
+
+* Verify that no remote connections are allowed by looking in the host based authentication file:
+      
+      $ sudo vi /etc/postgresql/9.5/main/pg_hba.conf
+
+      local   all             postgres                                peer
+      local   all             all                                     peer
+      host    all             all             127.0.0.1/32            md5
+      host    all             all             ::1/128                 md5
+
+* Create a new database user named `catalog` that has limited permissions to the `catalog` application database: 
+
+      $ sudo su - postgres
+      $ psql
+      postgres=# create user catalog with password 'catalog';
+      postgres=# create database catalog with owner catalog;
+      postgres=# \c catalog
+      catalog=# revoke all on schema public from public;
+      catalog=# grant all on schema public to catalog;
+
+
+* Verify `catalog` database user is successfully created:
+
+      postgres=# \du
+      
+  | Role name |                         Attributes                         | Member of
+  | ----------|------------------------------------------------------------| -----------
+  | catalog   |                                                            | {}
+  | postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+
+* Verify `catalog` database is successfully created:
+
+      postgres=# \l
+  |     Name   |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges    |
+  | -----------|----------|----------|-------------|-------------|----------------------- |
+  | catalog    | catalog  | UTF8     | en_US.UTF-8 | en_US.UTF-8 |                        |
+  | postgres   | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |                        |
+
     
-Type **ls** to ensure that you are inside the directory that contains application.py, db_models.py, db_initdata.py, oauth_utils.py, fb_client_secrets.json, google_client_secrets.json and two directories named 'templates' and 'static'.
+#### Step 12 - Install git
+* Install `git` to clone the Item Catalog application from Github repository:
 
-    > ls
-    > python db_models.py
-    > python db_initdata.py
-    > python application.py
-    
-1. **python db_models.py** - initializes the database
-2. **python db_initdata.py** - populates the database with vegan alternative categories and some vegan items
-3. **python application.py** - runs the Flask web server
-4. In your browser visit **http://localhost:8000** to view the vegan shopping list app.
+      $ sudo apt-get install git
 
-You should be able to view vegan alternative categories and items. After logging in with Google or Facebook account, you should be able to add, edit, and delete your own vegan items.
 
-## Known Issues
+### Deploy The Item Catalog Project
+#### Step 13 - Clone and setup the Item Catalog application from the Github repository
+* Clone Item Catalog application from the Github repository and place it `/var/www` folder:
 
-* Facebook login is not suppored on Firefox Version 62.0. Using the sample code from [Facebook Login for the Web with the JavaScript SDK](https://developers.facebook.com/docs/facebook-login/web), the same behavior is observed.
+      $ cd /var/www
+      $ sudo git clone https://github.com/liqin-cao/catalog.git
+      
+Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps) to setup a simple Flask application for deployment.
 
-## Release Notes
+* Install and enable `mod_wsgi`:
 
-* Facebook login is not available on Firefox 62.0; only Google login is suppored on Firefox 62.0.
-* For thread safe access to the database, the scoped_session() is used so that a single global variable can be used to safely represent transactional database sessions with sets of objects, localized to a single request thread.  See [Contextual/Thread-local Sessions](http://docs.sqlalchemy.org/en/latest/orm/contextual.html) for more detail.
-* Modal login dialog is implemented with [Bootstrap Modal Plugin](https://www.w3schools.com/bootstrap/bootstrap_modal.asp).
-* [Requiring HTTPS for Facebook Login](https://developers.facebook.com/blog/post/2018/06/08/enforce-https-facebook-login/) will be enforced by October 6, 2018.  The application can still run with HTTP on “localhost” addresses, but only while the app is still in development mode.
+      $ sudo apt-get install libapache2-mod-wsgi python-dev
+      $ sudo a2enmod wsgi
 
-## Tested With
+* Create a simple test Flask application in `/var/www/catalog/catalog/__init__.py`:
 
-* Windows 10 Enterprise
-* ubuntu-16.04
-* Google Chrome Version 68.0.3440.106
-* Microsoft Edge Version 25.10586.672.0
-* Firefox Version 62.0
+      $ cd /var/www/catalog/catalog
+      $ sudo vi __init__.py
+      
+            from flask import Flask
+            app = Flask(__name__)
+            @app.route("/")
+            def hello():
+                return "Hello Udacity!"
+            if __name__ == "__main__":
+                app.run()
+
+* Install `pip` and `virtualenv`:
+
+      $ sudo apt-get install python-pip
+      $ sudo pip install --upgrade pip
+      $ sudo pip install virtualenv
+
+* Setup a virtual environment to keep the application and its dependencies isolated from the main system:
+
+      $ cd /var/www/catalog/catalog
+      $ sudo virtualenv venv
+      
+      New python executable in /var/www/catalog/catalog/venv/bin/python
+      Installing setuptools, pip, wheel...done.
+      
+      $ source /var/www/catalog/catalog/venv/bin/activate
+
+* Install `Flask` and test the installation by running the simple test Flask application:
+
+      $ sudo pip install Flask
+      
+      Successfully installed Flask-1.0.2 Jinja2-2.10 MarkupSafe-1.0 Werkzeug-0.14.1 click-7.0 itsdangerous-0.24
+      
+      $ sudo python __init__.py
+
+* Configure and enable a new virtual host on the Ubuntu Linux server:
+
+      $ sudo vi /etc/apache2/sites-available/catalog.conf
+      
+            <VirtualHost *:80>
+                  ServerName 34.205.85.252
+                  ServerAdmin liqincao@gmail.com
+                  WSGIScriptAlias / /var/www/catalog/catalog.wsgi
+                  <Directory /var/www/catalog/catalog/>
+                        Order allow,deny
+                        Allow from all
+                  </Directory>
+                  Alias /static /var/www/catalog/catalog/static
+                  <Directory /var/www/catalog/catalog/static/>
+                        Order allow,deny
+                        Allow from all
+                  </Directory>
+                  ErrorLog ${APACHE_LOG_DIR}/error.log
+                  LogLevel warn
+                  CustomLog ${APACHE_LOG_DIR}/access.log combined
+            </VirtualHost>
+
+      $ sudo a2ensite catalog
+      
+* Create the `catalog.wsgi` file to server the Flask application:
+
+      $ sudo vi /var/www/catalog/catalog.wsgi
+            #!/usr/bin/python
+
+            import sys
+            import logging
+
+            logging.basicConfig(stream=sys.stderr)
+            sys.path.insert(0,"/var/www/catalog/")
+
+            from catalog import app as application
+            application.secret_key = 'In My Secret Life'
+
+* Restart Apache service:
+
+      $ sudo service apache2 restart
+
+* Verify that the simple test Flask application is accessible from the browser URL `http://34.205.85.252.xip.io/`.
+
+#### Step 14 - Make Item Catalog application accessible from a browser
+* Install modules needed by the Item Catalog application:
+
+      $ source /var/www/catalog/catalog/venv/bin/activate
+      $ sudo apt-get -qqy install python-sqlalchemy
+      $ sudo apt-get -qqy install python-psycopg2
+      $ sudo pip install sqlalchemy
+      $ sudo pip install oauth2client
+      $ sudo pip install requests
+      $ sudo pip install httplib2
+      $ sudo pip install bleach
+      
+* Update sqlalchemy to connect to PostgreSQL database in `db_models.py`, `db_initdata.py` and `application.py`:
+
+      engine = create_engine('postgresql://catalog:catalog@localhost/catalog')
+
+* Create database tables and populate the tables with initial data:
+
+      $ sudo python db_models.py
+      $ sudo python db_initdata.py
+      
+* Rename `application.py` to `__init__.py` and restart Apache service `sudo service apache2 restart`.
+
+* QQQ Set up OAuth with DNS name provided by [xip.io](http://xip.io/) service: `http://34.205.85.252.xip.io/`.
+* Verify that the Item Catalog application is accessible from the browser URL `http://34.205.85.252.xip.io/`.
+* QQQ [Hide Git Repos on Public Sites](https://davidegan.me/hide-git-repos-on-public-sites/) so that the Item Catalog `.git` directory is not publicly accessible via a browser!
 
 ## Contributing
 
@@ -156,8 +351,9 @@ This project is licensed under the LC License.
 ## Acknowledgments
 
 * Udacity Full Stack Web Developer Nanodegree
-* [W3School](https://www.w3schools.com/) for icons and css styling tips
-* [www.webkinzinsider.com](http://www.webkinzinsider.com/w/images/5/52/Chicken_Sad.png) for the error page image
-* [SNAPPA](https://snappa.com/) to create the app banner image
-* [United Poultry Concerns](http://upc-online.org/) for the banner background image
-* [Flask Snippets](http://flask.pocoo.org/snippets/3/) for CSRF protection of CRUD operations
+* [MobaXterm](https://mobaxterm.mobatek.net/) for connecting to the Linux server
+* [How To Disable Remote Logon For Root On Ubuntu 16.04 LTS Servers](https://websiteforstudents.com/how-to-disable-remote-logon-for-root-on-ubuntu-16-04-lts-servers/)
+* [How To Secure PostgreSQL on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps)
+* [How To Deploy a Flask Application on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
+* [xip.io](http://xip.io/) for providing a DNS name that refers to the Ubuntu Linux server IP address
+* [Hide Git Repos on Public Sites](https://davidegan.me/hide-git-repos-on-public-sites/)
