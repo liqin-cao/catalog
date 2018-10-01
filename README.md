@@ -12,21 +12,22 @@ Take a baseline installation of a AWS Lightsail Linux server and prepare it to h
 
 ## Software Summary
 * apache2
+* bleach
+* Flask
+* git
+* httplib2
 * libapache2-mod-wsgi
+* oauth2client
+* pip
 * postgresql
 * postgresql-contrib
-* git
 * python-dev
-* pip
-* virtualenv
-* Flask
+* python 2.7.12
 * python-sqlalchemy
 * python-psycopg2
-* sqlalchemy
-* oauth2client
 * requests
-* httplib2
-* bleach
+* sqlalchemy
+* virtualenv
 
 ## Configuration Summary
 
