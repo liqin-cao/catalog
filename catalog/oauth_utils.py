@@ -49,7 +49,7 @@ def google_connect(request):
     try:
         # Upgrade the authorization code into a credentials object
         oauth_flow = flow_from_clientsecrets(
-            'google_client_secrets.json', scope='')
+            '/var/www/catalog/catalog/google_client_secrets.json', scope='')
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
@@ -84,7 +84,7 @@ def google_connect(request):
 
     # Verify that the access token is valid for this app.
     GOOGLE_CLIENT_ID = json.loads(
-        open('google_client_secrets.json', 'r').read())['web']['client_id']
+        open('/var/www/catalog/catalog/google_client_secrets.json', 'r').read())['web']['client_id']
     print('Verify that the access token is valid for this app: {}'.format(
         GOOGLE_CLIENT_ID))
     if result['issued_to'] != GOOGLE_CLIENT_ID:
@@ -106,10 +106,11 @@ def google_connect(request):
 
     # Store the access token in the session for later use.
     print('Store user login credentials for later use')
-    login_session['credentials'] = credentials
+    login_session['credentials'] = credentials.to_json()
     login_session['gplus_id'] = gplus_id
 
     # Get user info
+    print('Get user info')
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
     params = {'access_token': credentials.access_token, 'alt': 'json'}
     answer = requests.get(userinfo_url, params=params)
@@ -142,8 +143,12 @@ def google_disconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+    stored_credentials = json.loads(stored_credentials) 
+    print('Stored credentials: {}'.format(stored_credentials))
+    print('Stored gplus_id : {}'.format(stored_gplus_id))
+
     # Execute HTTP GET request to revoke current token.
-    access_token = stored_credentials.access_token
+    access_token = stored_credentials['access_token']
     url = 'https://accounts.google.com/o/oauth2/revoke?token={}'.format(
         access_token)
     h = httplib2.Http()
@@ -174,9 +179,9 @@ def facebook_connect(request):
 
     # Verify that the access token is valid for this app.
     FACEBOOK_APP_ID = json.loads(
-        open('fb_client_secrets.json', 'r').read())['web']['app_id']
+        open('/var/www/catalog/catalog/fb_client_secrets.json', 'r').read())['web']['app_id']
     FACEBOOK_APP_SECRET = json.loads(
-        open('fb_client_secrets.json', 'r').read())['web']['app_secret']
+        open('/var/www/catalog/catalog/fb_client_secrets.json', 'r').read())['web']['app_secret']
     print('Verify that the access token is valid for this app: {}-{}'.format(
         FACEBOOK_APP_ID, FACEBOOK_APP_SECRET))
     url = '{}?{}&client_id={}&client_secret={}&fb_exchange_token={}'.format(

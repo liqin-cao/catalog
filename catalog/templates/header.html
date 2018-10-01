@@ -57,12 +57,8 @@
 			// Chrome 1+
 			var isChrome = !!window.chrome && !!window.chrome.webstore;
 
-			if (isFirefox) {
-				// Facebook login does not work with Firefox
-				document.getElementById("facebookLogin").style.display = "none";
-			} else {
-				document.getElementById("facebookLogin").style.display = "block";
-			}
+                        // Facebook no longer supports http oauth authentication.
+			document.getElementById("facebookLogin").style.display = "none";
 			console.log("Login Modal Open: " + ' isChrome-' + isChrome + ' isEdge-' + isEdge + ' isFirefox-' + isFirefox);
 		});
 	</script>
