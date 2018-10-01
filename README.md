@@ -364,8 +364,8 @@ This project is licensed under the LC License.
 
 * Udacity Full Stack Web Developer Nanodegree
 * [MobaXterm](https://mobaxterm.mobatek.net/) for connecting to the Linux server
+* [xip.io](http://xip.io/) for providing a DNS name that refers to the Ubuntu Linux server IP address
 * [How To Disable Remote Logon For Root On Ubuntu 16.04 LTS Servers](https://websiteforstudents.com/how-to-disable-remote-logon-for-root-on-ubuntu-16-04-lts-servers/)
 * [How To Secure PostgreSQL on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps)
 * [How To Deploy a Flask Application on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
-* [xip.io](http://xip.io/) for providing a DNS name that refers to the Ubuntu Linux server IP address
-* [Hide Git Repos on Public Sites](https://davidegan.me/hide-git-repos-on-public-sites/)
+* [How To Hide Git Repos on Public Sites](https://davidegan.me/hide-git-repos-on-public-sites/)
