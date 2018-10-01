@@ -187,7 +187,7 @@ Follow the instructions from [How To Secure PostgreSQL on an Ubuntu VPS](https:/
       catalog=# grant all on schema public to catalog;
 
 
-* Verify `catalog` database user is successfully created:
+* Verify `catalog` user is successfully created:
 
       postgres=# \du
       
@@ -218,7 +218,7 @@ Follow the instructions from [How To Secure PostgreSQL on an Ubuntu VPS](https:/
       $ cd /var/www
       $ sudo git clone https://github.com/liqin-cao/catalog.git
       
-Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps) to setup a simple Flask application for deployment.
+Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps) to setup a simple Flask application for testing.
 
 * Install and enable `mod_wsgi`:
 
@@ -262,7 +262,7 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
       
       $ sudo python __init__.py
 
-* Configure and enable a new virtual host on the Ubuntu Linux server:
+* Create an Apache Virtual Hosts configuration file in `/etc/apache2/sites-available` folder:
 
       $ sudo vi /etc/apache2/sites-available/catalog.conf
       
@@ -283,6 +283,8 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
                   LogLevel warn
                   CustomLog ${APACHE_LOG_DIR}/access.log combined
             </VirtualHost>
+
+* Enable the `catalog` site:
 
       $ sudo a2ensite catalog
       
@@ -328,6 +330,7 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
       $ sudo python db_initdata.py
       
 * Rename `application.py` to `__init__.py` and restart Apache service `sudo service apache2 restart`.
+
 * Verify that the Item Catalog application is accessible from the browser URL `http://34.205.85.252.xip.io/`.
 
 #### Step 15 - Setup OAuth support and secure .git repository
