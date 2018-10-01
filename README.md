@@ -327,10 +327,14 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
       $ sudo python db_initdata.py
       
 * Rename `application.py` to `__init__.py` and restart Apache service `sudo service apache2 restart`.
-
-* QQQ Set up OAuth with DNS name provided by [xip.io](http://xip.io/) service: `http://34.205.85.252.xip.io/`.
 * Verify that the Item Catalog application is accessible from the browser URL `http://34.205.85.252.xip.io/`.
-* QQQ [Hide Git Repos on Public Sites](https://davidegan.me/hide-git-repos-on-public-sites/) so that the Item Catalog `.git` directory is not publicly accessible via a browser!
+
+#### Step 15 - Setup OAuth support and secure .git repository
+* Update [Google OAuth credentials](https://console.developers.google.com) (`Authorized JavaScript origins` and `Authorized JavaScript origins`) to use the DNS name provided by [xip.io](http://xip.io/) service: `http://34.205.85.252.xip.io/`.
+
+* Download the updated Google client secrets JSON file.
+
+* Follow instructions from [Hide Git Repos on Public Sites](https://davidegan.me/hide-git-repos-on-public-sites/) to ensure that `http://34.205.85.252.xip.io/.git/config` is not publicly accessible via a browser!
 
 ## Contributing
 
