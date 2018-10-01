@@ -336,6 +336,14 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
 
 * Follow instructions from [Hide Git Repos on Public Sites](https://davidegan.me/hide-git-repos-on-public-sites/) to ensure that `http://34.205.85.252.xip.io/.git/config` is not publicly accessible via a browser!
 
+      $ sudo vi /etc/apache2/conf-enabled/security.conf
+      
+      <DirectoryMatch "/\.git">
+          Require all denied
+      </DirectoryMatch>
+
+* Restart Apache service `sudo service apache2 restart`.
+
 ## Contributing
 
 N/A
