@@ -348,23 +348,7 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
 
 * Restart Apache service `sudo service apache2 restart`.
 
-## Contributing
-
-N/A
-
-## Versioning
-
-N/A
-
-## Authors
-
-* Liqin Cao
-
-## License
-
-This project is licensed under the LC License.
-
-## Acknowledgments
+## Third-party Resources and Acknowledgments
 
 * Udacity Full Stack Web Developer Nanodegree
 * [MobaXterm](https://mobaxterm.mobatek.net/) for connecting to the Linux server
