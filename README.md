@@ -348,6 +348,100 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
 
 * Restart Apache service `sudo service apache2 restart`.
 
+### Setup Apache Server with SSL Support
+Following the instructions from [Setting up Apache Server with SSL Support on Ubuntu](https://www.maketecheasier.com/apache-server-ssl-support/) to enable SSL/HTTPS:
+
+* On the Amazon Lightsail **Networking** tab, add **HTTPS|TCP|443** to the **Firewall** section.
+
+* Allow `https` on the Linux Ubuntu server:
+      
+      $ sudo ufw allow https
+
+* Enable SSL module and restart the Apache service:
+
+      $ sudo a2enmod ssl
+      $ sudo service apache2 restart
+   
+* Generate a certificate signing request (ca.csr) using the following command:
+
+      $ sudo openssl genrsa -out ca.key 2048
+      $ sudo openssl req -nodes -new -key ca.key -out ca.csr
+      
+      You are about to be asked to enter information that will be incorporated
+      into your certificate request.
+      What you are about to enter is what is called a Distinguished Name or a DN.
+      There are quite a few fields but you can leave some blank
+      For some fields there will be a default value,
+      If you enter '.', the field will be left blank.
+      -----
+      Country Name (2 letter code) [AU]:US
+      State or Province Name (full name) [Some-State]:Maryland
+      Locality Name (eg, city) []:Silver Spring
+      Organization Name (eg, company) [Internet Widgits Pty Ltd]:Liqin Cao
+      Organizational Unit Name (eg, section) []:Liqin Cao
+      Common Name (e.g. server FQDN or YOUR name) []:34.205.85.252.xip.io
+      Email Address []:liqincao@gmail.com
+
+      Please enter the following 'extra' attributes
+      to be sent with your certificate request
+      A challenge password []:catalog
+      An optional company name []:Liqin Cao
+      
+* Generate a self-signed certificate (ca.crt) of X509 type valid for 365 keys:
+
+      $ sudo openssl x509 -req -days 365 -in ca.csr -signkey ca.key -out ca.crt
+      
+      Signature ok
+      subject=/C=US/ST=Maryland/L=Silver Spring/O=Liqin Cao/OU=Liqin Cao/CN=34.205.85.252.xip.io/emailAddress=liqincao@gmail.com
+      Getting Private key
+
+* Copy all certificate files to the `/etc/apache2/ssl` directory:
+
+      $ sudo cp ca.crt ca.key ca.csr /etc/apache2/ssl/
+      
+* Configure Apache to use the SSL certificate:
+
+      $ sudo vi /etc/apache2/sites-enable/catalog-ssl.conf
+      
+      <VirtualHost *:443>
+        ServerName 34.205.85.252.xip.io
+        ServerAdmin liqincao@gmail.com
+        WSGIScriptAlias / /var/www/catalog/catalog.wsgi
+        <Directory /var/www/catalog/catalog/>
+                Order allow,deny
+                Allow from all
+        </Directory>
+        Alias /static /var/www/catalog/catalog/static
+        <Directory /var/www/catalog/catalog/static/>
+                Order allow,deny
+                Allow from all
+        </Directory>
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        LogLevel warn
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        #   SSL Engine Switch:
+        #   Enable/Disable SSL for this virtual host.
+        SSLEngine on
+
+        #   A self-signed (snakeoil) certificate can be created by installing
+        #   the ssl-cert package. See
+        #   /usr/share/doc/apache2/README.Debian.gz for more info.
+        #   If both key and certificate are stored in the same file, only the
+        #   SSLCertificateFile directive is needed.
+        SSLCertificateFile /etc/apache2/ssl/ca.crt
+        SSLCertificateKeyFile /etc/apache2/ssl/ca.key
+      </VirtualHost>
+
+* Enable SSL site and restart Apache:
+
+      $ sudo a2ensite catalog-ssl
+      $ sudo /etc/init.d/apache2 restart
+      
+* **Facebook Login** enforces the use of HTTPS for Redirect URIs and the JavaScript SDK.  To support Facebook login in the web application, add `34.205.85.252.xip.io` to **App Domains** in the application **Settings > Basic** tab.
+
+* To verify the Apache (HTTPS) web server, open a web browser and type: `https://34.205.85.252.xip.io`.
+
 ## Third-party Resources and Acknowledgments
 
 * Udacity Full Stack Web Developer Nanodegree
@@ -357,3 +451,4 @@ Follow the instructions from [How To Deploy a Flask Application on an Ubuntu VPS
 * [How To Secure PostgreSQL on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps)
 * [How To Deploy a Flask Application on an Ubuntu VPS](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
 * [How To Hide Git Repos on Public Sites](https://davidegan.me/hide-git-repos-on-public-sites/)
+* [Setting up Apache Server with SSL Support on Ubuntu](https://www.maketecheasier.com/apache-server-ssl-support/)
